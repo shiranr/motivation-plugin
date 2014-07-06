@@ -1,8 +1,4 @@
-work
+..idea/
 *.iml
 *.ipr
 *.iws
-.classpath
-.project
-.settings
-.idea
