@@ -28,18 +28,24 @@ public class ChatNotifier extends Notifier {
 
     private static final Logger logger = Logger.getLogger(ChatNotifier.class.name)
 
-    private static String token
-    private static String roomId
-    private static String color
+    String getToken() {
+        descriptor.token
+    }
+
+    String getRoom() {
+        descriptor.room
+    }
+
+    String getColor() {
+        descriptor.color
+    }
+
     private static String baseUrl = "https://api.hipchat.com/v2"
 
     @DataBoundConstructor
-    public ChatNotifier(final String token, final String roomId, final String color) {
+    public ChatNotifier() {
         super()
         logger.log(Level.INFO, "Starting Chat Notifier")
-        this.roomId = roomId
-        this.token = token
-        this.color = (color) ? color : 'random'
     }
 
     @Override
@@ -52,7 +58,7 @@ public class ChatNotifier extends Notifier {
         logger.log(Level.INFO, "Performing Chat Notifier")
         Map jsonContent = getJsonContent(build)
         try {
-            String url = "$baseUrl/room/${roomId}/notification?auth_token=${token}"
+            String url = "$baseUrl/room/${room}/notification?auth_token=${token}"
             HTTPBuilder builder = new HTTPBuilder(url)
             logger.log(Level.INFO, "Sending request with url ${url} and jsonContent ${jsonContent}")
             builder.request(Method.POST, ContentType.JSON) { req ->
@@ -85,20 +91,21 @@ public class ChatNotifier extends Notifier {
 
         private String token
         private String room
+        private String color
+
 
         String getColor() {
-            return color
+            color ?: 'random'
         }
 
         String getRoom() {
-            return room
+            room
         }
 
         String getToken() {
-            return token
+            token
         }
 
-        private String color
 
         @Override
         boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -124,25 +131,10 @@ public class ChatNotifier extends Notifier {
         }
 
         @Override
-        public ChatNotifier newInstance(StaplerRequest sr) {
-            logger.log(Level.INFO, "*****1*****")
-            if (token == null) token = sr.getParameter("hipChatToken")
-            if (room == null) room = sr.getParameter("hipChatRoom")
-            color = sr.getParameter("hipChatColor")
-            new ChatNotifier(token, room, color)
-        }
-
-        @Override
         public boolean configure(StaplerRequest sr, JSONObject formData) {
-            logger.log(Level.INFO, "*****2*****")
             token = formData.getString("hipChatToken")
             room = formData.getString("hipChatRoom")
             color = formData.getString("hipChatColor")
-            try {
-                new ChatNotifier(token, room, color)
-            } catch (Exception e) {
-                throw e
-            }
             save()
             super.configure(sr, formData)
         }
