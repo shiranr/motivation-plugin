@@ -12,9 +12,6 @@
     so it should be straightforward to find them.
   -->
 <f:section title="Global HipChat Notifier Settings">
-    <f:entry title="Username" help="${rootURL}/plugin/chat/help-globalConfig-username.html">
-        <f:textbox name="hipChatRoom" value="${descriptor.getUsername()}" />
-    </f:entry>
     <f:entry title="Token" help="${rootURL}/plugin/chat/help-globalConfig-apiToken.html">
         <f:password name="hipChatToken" value="${descriptor.getToken()}" />
     </f:entry>
@@ -22,7 +19,7 @@
         <f:textbox name="hipChatRoom" value="${descriptor.getRoom()}" />
     </f:entry>
     <f:entry title="Text Color" help="${rootURL}/plugin/chat/help-globalConfig-color.html">
-            <f:textbox name="hipChatRoom" value="${descriptor.getTextColor()}" />
+            <f:textbox name="hipChatColor" value="${descriptor.getColor()}" />
     </f:entry>
 
   </f:section>

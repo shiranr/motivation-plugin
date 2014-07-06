@@ -14,7 +14,6 @@ class HttpConnector {
 
     private static final Logger logger = Logger.getLogger(HttpConnector.class.name)
 
-    private String username
     private String token
     private String roomId
     private String color
@@ -22,8 +21,7 @@ class HttpConnector {
     private boolean notify
     private HTTPBuilder builder
 
-    HttpConnector(String username, String token, String roomId, String color, String message_format = 'text', boolean notify = true) {
-        this.username = username
+    HttpConnector(String token, String roomId, String color = 'random', String message_format = 'text', boolean notify = true) {
         this.token = token
         this.roomId = roomId
         this.color = color
