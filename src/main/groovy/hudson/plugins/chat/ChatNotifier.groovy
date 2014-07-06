@@ -1,4 +1,5 @@
 package hudson.plugins.chat
+
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -19,6 +20,7 @@ import org.kohsuke.stapler.StaplerRequest
 
 import java.util.logging.Level
 import java.util.logging.Logger
+
 /**
  * Created by Shiran on 7/2/2014.
  */
@@ -26,10 +28,9 @@ public class ChatNotifier extends Notifier {
 
     private static final Logger logger = Logger.getLogger(ChatNotifier.class.name)
 
-    private static Map jsonContent
-    private static String token = ''
-    private static String roomId = ''
-    private static String color = ''
+    private static String token
+    private static String roomId
+    private static String color
     private static String baseUrl = "https://api.hipchat.com/v2"
 
     @DataBoundConstructor
@@ -38,7 +39,7 @@ public class ChatNotifier extends Notifier {
         logger.log(Level.INFO, "Starting Chat Notifier")
         this.roomId = roomId
         this.token = token
-        this.color = color ?: 'random'
+        this.color = (color) ? color : 'random'
     }
 
     @Override
@@ -77,25 +78,10 @@ public class ChatNotifier extends Notifier {
         BuildStepMonitor.NONE
     }
 
-
-
-
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         private static final Logger logger = Logger.getLogger(DescriptorImpl.class.name)
-
-        String getToken() {
-            return token
-        }
-
-        String getRoom() {
-            return room
-        }
-
-        String getColor() {
-            return color
-        }
 
         private String token
         private String room
