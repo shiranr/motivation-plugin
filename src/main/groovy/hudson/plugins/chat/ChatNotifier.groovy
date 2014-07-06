@@ -1,5 +1,4 @@
 package hudson.plugins.chat
-
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -12,15 +11,12 @@ import hudson.tasks.BuildStepDescriptor
 import hudson.tasks.BuildStepMonitor
 import hudson.tasks.Notifier
 import hudson.tasks.Publisher
-import hudson.util.FormValidation
 import net.sf.json.JSONObject
 import org.kohsuke.stapler.DataBoundConstructor
-import org.kohsuke.stapler.QueryParameter
 import org.kohsuke.stapler.StaplerRequest
 
 import java.util.logging.Level
 import java.util.logging.Logger
-
 /**
  * Created by Shiran on 7/2/2014.
  */
@@ -56,11 +52,10 @@ public class ChatNotifier extends Notifier {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         logger.log(Level.INFO, "Performing Chat Notifier")
-        Map jsonContent = getJsonContent(build)
+        Map jsonContent = getJsonContent(build.displayName, build.result)
         try {
             String url = "$baseUrl/room/${room}/notification?auth_token=${token}"
             HTTPBuilder builder = new HTTPBuilder(url)
-            logger.log(Level.INFO, "Sending request with url ${url} and jsonContent ${jsonContent}")
             builder.request(Method.POST, ContentType.JSON) { req ->
                 body = jsonContent
                 response.succuess = { resp, json ->
@@ -76,8 +71,9 @@ public class ChatNotifier extends Notifier {
         return true
     }
 
-    private LinkedHashMap<String, Serializable> getJsonContent(AbstractBuild<?, ?> build) {
-        [color: color, notify: true, message_format: 'text', message: "Build $build.displayName finished with status $build.result".toString()]
+    private Map getJsonContent(String buildName, String buildResult) {
+        String message = "Build $buildName finished with status $buildResult"
+        [color: color, notify: true, message_format: 'text', message: message]
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -86,13 +82,9 @@ public class ChatNotifier extends Notifier {
 
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-
-        private static final Logger logger = Logger.getLogger(DescriptorImpl.class.name)
-
         private String token
         private String room
         private String color
-
 
         String getColor() {
             color ?: 'random'
@@ -117,16 +109,7 @@ public class ChatNotifier extends Notifier {
             'Chat Notifications'
         }
 
-        public FormValidation doCheckToken(@QueryParameter String value) {
-            (value) ? FormValidation.ok() : FormValidation.error("Invalid token")
-        }
-
-        public FormValidation doCheckRoom(@QueryParameter String value) {
-            (value) ? FormValidation.ok() : FormValidation.error("Invalid room id")
-        }
-
         public DescriptorImpl() {
-            logger.log(Level.INFO, "Starting descriptor Impl.")
             load()
         }
 
