@@ -1,4 +1,7 @@
 package hudson.plugins.chat
+import groovyx.net.http.ContentType
+import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.Method
 import hudson.Extension
 import hudson.Launcher
 import hudson.model.AbstractBuild
@@ -23,13 +26,19 @@ public class ChatNotifier extends Notifier {
 
     private static final Logger logger = Logger.getLogger(ChatNotifier.class.name)
 
-    private HttpConnector httpConnector
+    private static Map jsonContent
+    private static String token = ''
+    private static String roomId = ''
+    private static String color = ''
+    private static String baseUrl = "https://api.hipchat.com/v2"
 
     @DataBoundConstructor
     public ChatNotifier(final String token, final String roomId, final String color) {
         super()
         logger.log(Level.INFO, "Starting Chat Notifier")
-        httpConnector = new HttpConnector(token, roomId, color)
+        this.roomId = roomId
+        this.token = token
+        this.color = color ?: 'random'
     }
 
     @Override
@@ -37,33 +46,60 @@ public class ChatNotifier extends Notifier {
         (DescriptorImpl) super.getDescriptor()
     }
 
-    public ChatNotifier() {
-    }
-
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-        String message = "Build $build.displayName finished with status $build.result"
-        if (httpConnector) {
-            try {
-                httpConnector.sendMessage(message)
-            } catch (Exception e) {
-                logger.log(Level.ERROR, "Failed to send hipchat notification with message $message", e)
+        logger.log(Level.INFO, "Performing Chat Notifier")
+        Map jsonContent = getJsonContent(build)
+        try {
+            String url = "$baseUrl/room/${roomId}/notification?auth_token=${token}"
+            HTTPBuilder builder = new HTTPBuilder(url)
+            logger.log(Level.INFO, "Sending request with url ${url} and jsonContent ${jsonContent}")
+            builder.request(Method.POST, ContentType.JSON) { req ->
+                body = jsonContent
+                response.succuess = { resp, json ->
+                    logger.log(Level.INFO, "A hipchat notification was sent with message $jsonContent.message")
+                }
+                response.failure = { resp, json ->
+                    logger.log(Level.INFO, "Failed to send hipchat notification with message $jsonContent.message and response ${resp.status} - ${json}")
+                }
             }
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Failed to send hipchat notification with message $jsonContent.message", e)
         }
         return true
+    }
+
+    private LinkedHashMap<String, Serializable> getJsonContent(AbstractBuild<?, ?> build) {
+        [color: color, notify: true, message_format: 'text', message: "Build $build.displayName finished with status $build.result".toString()]
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
         BuildStepMonitor.NONE
     }
 
+
+
+
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-        String token
-        String room
-        String color
+        private static final Logger logger = Logger.getLogger(DescriptorImpl.class.name)
 
+        String getToken() {
+            return token
+        }
+
+        String getRoom() {
+            return room
+        }
+
+        String getColor() {
+            return color
+        }
+
+        private String token
+        private String room
+        private String color
 
         @Override
         boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -84,11 +120,13 @@ public class ChatNotifier extends Notifier {
         }
 
         public DescriptorImpl() {
+            logger.log(Level.INFO, "Starting descriptor Impl.")
             load()
         }
 
         @Override
         public ChatNotifier newInstance(StaplerRequest sr) {
+            logger.log(Level.INFO, "*****1*****")
             if (token == null) token = sr.getParameter("hipChatToken")
             if (room == null) room = sr.getParameter("hipChatRoom")
             color = sr.getParameter("hipChatColor")
@@ -96,14 +134,15 @@ public class ChatNotifier extends Notifier {
         }
 
         @Override
-        public boolean configure(StaplerRequest sr, JSONObject formData){
-            token = sr.getParameter("hipChatToken")
-            room = sr.getParameter("hipChatRoom")
-            color = sr.getParameter("hipChatColor")
+        public boolean configure(StaplerRequest sr, JSONObject formData) {
+            logger.log(Level.INFO, "*****2*****")
+            token = formData.getString("hipChatToken")
+            room = formData.getString("hipChatRoom")
+            color = formData.getString("hipChatColor")
             try {
                 new ChatNotifier(token, room, color)
             } catch (Exception e) {
-               throw e
+                throw e
             }
             save()
             super.configure(sr, formData)
