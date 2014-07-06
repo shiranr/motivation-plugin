@@ -85,6 +85,19 @@ public class ChatNotifier extends Notifier {
 
         private String token
         private String room
+
+        String getColor() {
+            return color
+        }
+
+        String getRoom() {
+            return room
+        }
+
+        String getToken() {
+            return token
+        }
+
         private String color
 
         @Override
