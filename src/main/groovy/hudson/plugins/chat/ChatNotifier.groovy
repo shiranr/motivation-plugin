@@ -98,7 +98,6 @@ public class ChatNotifier extends Notifier {
             token
         }
 
-
         @Override
         boolean isApplicable(Class<? extends AbstractProject> jobType) {
             true
