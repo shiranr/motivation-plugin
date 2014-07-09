@@ -52,7 +52,7 @@ public class ChatNotifier extends Notifier {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         logger.log(Level.INFO, "Performing Chat Notifier")
-        Map jsonContent = getJsonContent(build.displayName, build.result)
+        Map jsonContent = getJsonContent(build.displayName, build.result.toString())
         try {
             String url = "$baseUrl/room/${room}/notification?auth_token=${token}"
             HTTPBuilder builder = new HTTPBuilder(url)
