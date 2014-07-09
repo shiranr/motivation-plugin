@@ -1,4 +1,4 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:f="/lib/form">
     <f:section title="Global Chat Notifier Settings">
         <f:entry title="Token" help="${rootURL}/plugin/chat/help-globalConfig-token.html">
             <f:password name="hipChatToken" value="${descriptor.getToken()}" />
